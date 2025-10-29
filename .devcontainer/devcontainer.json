@@ -1,0 +1,33 @@
+{
+    "name": "RL",
+    "dockerFile": "Dockerfile",
+    "build": {
+        "args": {
+            "WORKSPACE": "${containerWorkspaceFolder}"
+        }
+    },
+    "remoteUser": "user",
+    "runArgs": [
+        "--network=host", // Remove network isolation between the container and the Docker host.
+        "--add-host=host.docker.internal:host-gateway", // Allow accessing host IP using host.docker.internal
+        "--hostname=user", // Set hostname,
+        "-e", "DISPLAY=host.docker.internal:0" // gui
+    ],
+     "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.profiles.linux": {
+                    "bash": {
+                        "path": "bash"
+                    }
+                },
+                "terminal.integrated.defaultProfile.linux": "bash"
+            },
+            "extensions": [
+                "ms-python.python",
+                "ms-azuretools.vscode-docker",
+                "mutantdino.resourcemonitor"
+            ]
+        }
+    }
+}
