@@ -174,7 +174,7 @@ class SarsaAgent:
                 #los resultados en la consola, e incluso deshabilitarla.
                 episodes_update = 1000
                 if episode % episodes_update == 0:                      
-                    print(f"Episode {episode}, Total undiscounted return: {total_undiscounted_return}, Epsilon: {self.epsilon}")
+                    print(f"Episode {episode}, Total undiscounted return: {total_undiscounted_return}, Epsilon: {self.epsilon}") # a futuro cambiar el total_undiscounted_return por media de últimos episodios
                     #puedes salvar el estado actual del agente, si te viene bien    
 
     
@@ -221,9 +221,9 @@ if __name__ == "__main__":
     warehouse_height = 10.0
     ################
     #diseñar los tiles
-    n_tiles_width = 1
-    n_tiles_height = 1
-    n_tilings = 1
+    n_tiles_width = 20
+    n_tiles_height = 20
+    n_tilings = 8
     
     target_area = (2.5, 8, 1.0, 2.0)
 
@@ -231,13 +231,13 @@ if __name__ == "__main__":
                                  (n_tiles_width, n_tiles_height), 
                                  n_tilings, target_area)
     
-    agent = SarsaAgent(env, feedback, learning_rate=1, discount_factor=0.99, epsilon=0.5)
+    agent = SarsaAgent(env, feedback, learning_rate=0.1, discount_factor=0.99, epsilon=0.5)
     
     # Train the agent
     agent.train(num_episodes=10000)
     
     #save the agent object into memory    
-    with open('agente_grupo_xx_a.pkl', 'wb') as f:
+    with open('agente_grupo_06_b.pkl', 'wb') as f:
         pickle.dump(agent, f)
 
     # Evaluate the agent
