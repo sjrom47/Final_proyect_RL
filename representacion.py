@@ -67,10 +67,7 @@ class FeedbackConstruction:
         for i in range(self.num_tilings):
             offset_x = offset_factor_x * i
             offset_y = offset_factor_y * i
-            tile_temp = tiles(self.iht, 1, 
-                    [norm_x - offset_x, 
-                    norm_y - offset_y],
-                    ints=[i])
+            tile_temp = tiles(self.iht, 1, [norm_x - offset_x, norm_y - offset_y], ints=[i])
             active_tiles.append(tile_temp[0])
                 
         return active_tiles

@@ -47,6 +47,10 @@ class SarsaAgent:
         
         # Tendrás que usar estrategias para monitorizar el aprendizaje del agente.
         # Añade aquí los atributos que necesites para hacerlo.
+        self.episode_rewards = []
+        self.episode_lengths = []
+        self.episode_timesteps = []
+
 
         ##############################
 
@@ -81,9 +85,11 @@ class SarsaAgent:
         """
         features = self.feedback.process_observation(state)
         q_values = np.array([0,0,0,0])
-        # Calcula los valores de cada acción para el estado dado como argumento (aproximación
-        # lineal). Añade aquí tu código
+        # Calcula los valores de cada acción para el estado dado como argumento (aproximación lineal). Añade aquí tu código
 
+        for action in range(self.num_actions):
+            q_values[action] = np.sum(self.weights[action][features])
+    
 
         ###################################
         return q_values
@@ -110,6 +116,8 @@ class SarsaAgent:
             q_next = qs_next[next_action]            
             td_error = reward + self.discount_factor * q_next - q_current
         # Añade aquí tu código para actualizar los pesos del agente
+        features = self.feedback.process_observation(state)
+        self.weights[action][features] += self.learning_rate * td_error
         
         #############################################
         
@@ -126,39 +134,48 @@ class SarsaAgent:
         None
         """
         #Juega con estos tres hiperparámetros
-        decay_start = .9 #entre 0 y 1. 
-        decay_rate = .9 #control del decrecimiento (exponencial) de epsilon
-        min_epsilon = .5 #valor mínimo de epsilon
-        ####################################
-        for episode in range(num_episodes):
-            #Set-up del episodio
-            state, _ = self.env.reset()
-            #Decrecimiento exponencial de epsilon hasta valor mínimo desde comienzo marcado
-            if episode >= num_episodes*decay_start:
-                self.epsilon *= decay_rate
-                self.epsilon = np.max([min_epsilon,self.epsilon])
-            #Primera acción
-            action = self.get_action(state, self.epsilon)            
-            n_steps = 0
-            #Generación del episodio
-            total_undiscounted_return = 0
-            while True:                                        
-                next_state, reward, terminated, truncated, _ = self.env.step(action)  
-                total_undiscounted_return += reward          
-                next_action = self.get_action(next_state, self.epsilon)
-                self.update(state, action, reward, next_state, next_action, terminated)    
-                state = next_state
-                action = next_action                
-                n_steps += 1
-                if terminated or truncated:
-                    break
 
-            #Aquí también puedes cambiar la frecuencia con la que muestras
-            #los resultados en la consola, e incluso deshabilitarla.
-            episodes_update = 1000
-            if episode % episodes_update == 0:                      
-                print(f"Episode {episode}, Total undiscounted return: {total_undiscounted_return}, Epsilon: {self.epsilon}")
-                #puedes salvar el estado actual del agente, si te viene bien    
+        # decay_start = .9 #entre 0 y 1. 
+        # decay_rate = .9 #control del decrecimiento (exponencial) de epsilon
+        # min_epsilon = .5 #valor mínimo de epsilon
+        list_decay_start = [0.5, 0.7, 0.9]
+        list_decay_rate = [0.9, 0.95, 0.99]
+        list_min_epsilon = [0.1, 0.3, 0.5]
+
+        for ds, dr, me in zip(list_decay_start, list_decay_rate, list_min_epsilon):
+            decay_start = ds 
+            decay_rate = dr 
+            min_epsilon = me 
+            # self.epsilon = 1.0  # Resetear epsilon para cada combinación de hiperparámetros
+            for episode in range(num_episodes):
+                #Set-up del episodio
+                state, _ = self.env.reset()
+                #Decrecimiento exponencial de epsilon hasta valor mínimo desde comienzo marcado
+                if episode >= num_episodes*decay_start:
+                    self.epsilon *= decay_rate
+                    self.epsilon = np.max([min_epsilon,self.epsilon])
+                #Primera acción
+                action = self.get_action(state, self.epsilon)            
+                n_steps = 0
+                #Generación del episodio
+                total_undiscounted_return = 0
+                while True:                                        
+                    next_state, reward, terminated, truncated, _ = self.env.step(action)  
+                    total_undiscounted_return += reward          
+                    next_action = self.get_action(next_state, self.epsilon)
+                    self.update(state, action, reward, next_state, next_action, terminated)    
+                    state = next_state
+                    action = next_action                
+                    n_steps += 1
+                    if terminated or truncated:
+                        break
+
+                #Aquí también puedes cambiar la frecuencia con la que muestras
+                #los resultados en la consola, e incluso deshabilitarla.
+                episodes_update = 1000
+                if episode % episodes_update == 0:                      
+                    print(f"Episode {episode}, Total undiscounted return: {total_undiscounted_return}, Epsilon: {self.epsilon}")
+                    #puedes salvar el estado actual del agente, si te viene bien    
 
     
     def evaluate(self, num_episodes):
