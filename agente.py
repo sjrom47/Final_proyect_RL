@@ -121,7 +121,7 @@ class SarsaAgent:
         
         #############################################
         
-    def train(self, num_episodes):
+    def train(self, num_episodes, decay_start=0.3, decay_rate=0.7, min_epsilon=0.1):
         """
         Train the agent using the SARSA(0) algorithm.
         Parameters:
@@ -135,9 +135,9 @@ class SarsaAgent:
         """
         #Juega con estos tres hiperparámetros
 
-        decay_start = .3 #entre 0 y 1. 
-        decay_rate = .4 #control del decrecimiento (exponencial) de epsilon
-        min_epsilon = .0 #valor mínimo de epsilon
+        #decay_start = .3 #entre 0 y 1. 
+        #decay_rate = .4 #control del decrecimiento (exponencial) de epsilon
+        #min_epsilon = .0 #valor mínimo de epsilon
         list_decay_start = [0.3, 0.5, 0.55]
         list_decay_rate = [0.7, 0.75, 0.8]
         list_min_epsilon = [0.1, 0.2, 0.3]
