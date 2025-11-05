@@ -139,8 +139,8 @@ class SarsaAgent:
         decay_rate = .995 #control del decrecimiento (exponencial) de epsilon
         min_epsilon = .01 #valor mínimo de epsilon
         # si le bajas el epsilon a 0 el agente depende ya solo de sus decisiones
-        list_decay_start = [0.3, 0.5, 0.55]
-        list_decay_rate = [0.3, 0.4, 0.5]
+        list_decay_start = [0.2, 0.3, 0.4]
+        list_decay_rate = [0.9, 0.95, 0.99]
         list_min_epsilon = [0.01, 0.05, 0.1]
 
         for episode in range(num_episodes):
