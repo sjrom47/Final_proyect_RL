@@ -407,13 +407,23 @@ if __name__ == "__main__":
     obs = env.reset()
     done = False
 
-    for _ in range(20):  # Run for 20 steps
-        action = env.action_space.sample()  # Your agent would make a decision here
-        obs, reward, terminated, truncated, info = env.step(action)
-        print(f'Action: {action}; Observation: {obs}; done? {terminated or truncated}; Reward: {reward}')
-        #env._render_tiles(n_tiles_width = 10, n_tiles_height = 10, n_tilings = 8) 
-        env._render_tiles(mode='human', n_tiles_width = 10, n_tiles_height = 10, n_tilings = 8)
-        if done:
-            obs, info = env.reset()
+    tile_sizes = [(10, 10), (15, 15), (20, 20)]
+    tilings_list = [4, 8, 16]
+
+    print("\n=== Comparativa de área de influencia (tiles) ===")
+    for (nx, ny) in tile_sizes:
+        for nt in tilings_list:
+            print(f"n_tiles=({nx},{ny}), n_tilings={nt}")
+            for _ in range(20):  # Run for 20 steps
+                action = env.action_space.sample()  # Your agent would make a decision here
+                obs, reward, terminated, truncated, info = env.step(action)
+                print(f'Action: {action}; Observation: {obs}; done? {terminated or truncated}; Reward: {reward}')
+                #env._render_tiles(n_tiles_width = 10, n_tiles_height = 10, n_tilings = 8) 
+                env._render_tiles(mode='human',
+                              n_tiles_width=nx,
+                              n_tiles_height=ny,
+                              n_tilings=nt)
+                if done:
+                    obs, info = env.reset()
 
     env.close()

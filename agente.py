@@ -121,7 +121,7 @@ class SarsaAgent:
         
         #############################################
         
-    def train(self, num_episodes):
+    def train(self, num_episodes, decay_start=0.3, decay_rate=0.7, min_epsilon=0.1):
         """
         Train the agent using the SARSA(0) algorithm.
         Parameters:

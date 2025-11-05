@@ -410,7 +410,7 @@ if __name__ == "__main__":
     obs, _ = env.reset()
 
     # Cargar agente entrenado
-    with open('agente_grupo_06_b.pkl', 'rb') as f:
+    with open('best_agent_temp_DAVID.pkl', 'rb') as f:
         agent = pickle.load(f)
 
     for _ in range(200):  # Ejecutar pasos
