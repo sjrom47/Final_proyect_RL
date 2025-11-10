@@ -4,6 +4,7 @@ from representacion import FeedbackConstruction
 from agente_q import QLearningAgent
 import numpy as np
 import pickle
+import os
 
 def make_agent(n_tiles_width=20, n_tiles_height=20, n_tilings=8,
                alpha=0.1, gamma=0.99, epsilon0=0.5):
@@ -42,7 +43,8 @@ if __name__ == "__main__":
                 if avg > best_score:
                     best_score = avg
                     best_cfg = (ds, dr, me)
-                    with open(f"best_agent_q_temp_DAVID.pkl", "wb") as f:
+                    os.makedirs('agents', exist_ok=True)
+                    with open(os.path.join('agents', f"best_agent_q_temp_DAVID.pkl"), "wb") as f:
                         pickle.dump(agent, f)
 
     print(f"\nMEJOR: ds={best_cfg[0]} dr={best_cfg[1]} me={best_cfg[2]}  "
@@ -52,5 +54,7 @@ if __name__ == "__main__":
     best_agent = make_agent()
     best_agent.train(num_episodes=10000,
                      decay_start=best_cfg[0], decay_rate=best_cfg[1], min_epsilon=best_cfg[2])
-    with open(f"agente_best_ds{best_cfg[0]}_dr{best_cfg[1]}_me{best_cfg[2]}.pkl", "wb") as f:
+    os.makedirs('agents', exist_ok=True)
+    fname = f"agente_best_ds{best_cfg[0]}_dr{best_cfg[1]}_me{best_cfg[2]}.pkl"
+    with open(os.path.join('agents', fname), "wb") as f:
         pickle.dump(best_agent, f)

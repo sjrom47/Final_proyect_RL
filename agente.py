@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from entorno_navegacion import Navegacion
 from representacion import FeedbackConstruction
@@ -232,8 +233,10 @@ if __name__ == "__main__":
     # Train the agent
     agent.train(num_episodes=10000)
     
-    #save the agent object into memory    
-    with open('agente_grupo_06_b.pkl', 'wb') as f:
+    # save the agent object into memory inside `agents/`
+    os.makedirs('agents', exist_ok=True)
+    filename = 'agente_grupo_06_b_1000.pkl'
+    with open(os.path.join('agents', filename), 'wb') as f:
         pickle.dump(agent, f)
 
     # Evaluate the agent

@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle, Circle
 import pickle
-#from agente import SarsaAgent
+from agente import SarsaAgent
 from agente_q import QLearningAgent
 
 class Navegacion(gym.Env):
@@ -411,7 +411,7 @@ if __name__ == "__main__":
     obs, _ = env.reset()
 
     # Cargar agente entrenado
-    with open('best_agent_q_temp_DAVID.pkl', 'rb') as f:
+    with open('agents/agente_q_grupo_06_b.pkl', 'rb') as f:
         agent = pickle.load(f)
 
     for _ in range(200):  # Ejecutar pasos

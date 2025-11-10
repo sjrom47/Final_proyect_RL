@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from entorno_navegacion import Navegacion
 from representacion import FeedbackConstruction
@@ -145,9 +146,9 @@ class QLearningAgent:
         None
         """
         # Juega con estos tres hiperparámetros
-        decay_start = .5  # entre 0 y 1.
+        decay_start = .3  # entre 0 y 1.
         decay_rate = .99  # control del decrecimiento (exponencial) de epsilon
-        min_epsilon = .1  # valor mínimo de epsilon
+        min_epsilon = .02  # valor mínimo de epsilon
         # si le bajas el epsilon a 0 el agente depende ya solo de sus decisiones
         list_decay_start = [0.2, 0.3, 0.4]
         list_decay_rate = [0.9, 0.95, 0.99]
@@ -245,13 +246,15 @@ if __name__ == "__main__":
                                  (n_tiles_width, n_tiles_height), 
                                  n_tilings, target_area)
     
-    agent = QLearningAgent(env, feedback, learning_rate=0.1, discount_factor=0.99, epsilon=0.5)
+    agent = QLearningAgent(env, feedback, learning_rate=0.05, discount_factor=0.95, epsilon=0.8)
     
     # Train the agent
     agent.train(num_episodes=10000)
     
-    # save the agent object into memory    
-    with open('agente_q_grupo_06_b.pkl', 'wb') as f:
+    # save the agent object into memory inside `agents/`
+    os.makedirs('agents', exist_ok=True)
+    filename = 'agente_q_grupo_06_b.pkl'
+    with open(os.path.join('agents', filename), 'wb') as f:
         pickle.dump(agent, f)
 
     # Evaluate the agent
