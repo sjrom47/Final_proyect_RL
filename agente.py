@@ -228,18 +228,43 @@ if __name__ == "__main__":
                                  (n_tiles_width, n_tiles_height), 
                                  n_tilings, target_area)
     
+    # Crear y entrenar el primer agente (SARSA-10k)
     agent = SarsaAgent(env, feedback, learning_rate=0.1, discount_factor=0.99, epsilon=0.5)
-    
-    # Train the agent
-    agent.train(num_episodes=10000)
-    
-    # save the agent object into memory inside `agents/`
+    agent.train(num_episodes=10_000, decay_start=0.3, decay_rate=0.995, min_epsilon=0.01)
+
+    # Guardar agente con 10k episodios
     os.makedirs('agents', exist_ok=True)
-    filename = 'agente_grupo_06_b_1000.pkl'
-    with open(os.path.join('agents', filename), 'wb') as f:
+    filename_10k = 'agente_sarsa_10k.pkl'
+    with open(os.path.join('agents', filename_10k), 'wb') as f:
         pickle.dump(agent, f)
 
-    # Evaluate the agent
-    agent.evaluate(num_episodes=1)
+    print("\n--- Evaluación del agente SARSA-10k ---")
+    agent.evaluate(num_episodes=1000)
+
+    # Continuar entrenamiento (SARSA-full)
+    agent.train(num_episodes=50_000, decay_start=0.3, decay_rate=0.995, min_epsilon=0.01)
+
+    # Guardar el agente más entrenado
+    filename_full = 'agente_sarsa_50k.pkl'
+    with open(os.path.join('agents', filename_full), 'wb') as f:
+        pickle.dump(agent, f)
+
+    print("\n--- Evaluación del agente SARSA-full ---")
+    agent.evaluate(num_episodes=1000)
 
     
+    # agent = SarsaAgent(env, feedback, learning_rate=0.1, discount_factor=0.99, epsilon=0.5)
+    
+    # # Train the agent
+    # agent.train(num_episodes=10000)
+    
+    # # save the agent object into memory inside `agents/`
+    # os.makedirs('agents', exist_ok=True)
+    # filename = 'agente_grupo_06_b_1000.pkl'
+    # with open(os.path.join('agents', filename), 'wb') as f:
+    #     pickle.dump(agent, f)
+
+    # # Evaluate the agent
+    # agent.evaluate(num_episodes=1)
+
+
