@@ -411,7 +411,7 @@ if __name__ == "__main__":
     obs, _ = env.reset()
 
     # Cargar agente entrenado
-    with open('agents/agente_q_grupo_06_b.pkl', 'rb') as f:
+    with open('agents/agente_sarsa_50k.pkl', 'rb') as f:
         agent = pickle.load(f)
 
     for _ in range(200):  # Ejecutar pasos
@@ -421,7 +421,7 @@ if __name__ == "__main__":
         print(f'Action: {action}; Observation: {obs}; done? {terminated or truncated}; Reward: {reward}')
 
         # Render con tiles de debug
-        env._render_tiles(mode='human', n_tiles_width=10, n_tiles_height=10, n_tilings=8)
+        env._render_tiles(mode='human', n_tiles_width=20, n_tiles_height=20, n_tilings=8)
 
         if terminated or truncated:
             obs, _ = env.reset()

@@ -117,9 +117,9 @@ class Navegacion(gym.Env):
 
         # Reward calculation
         if self.target:
-            reward = 100 
+            reward = 50 
         elif self.collision:
-            reward = -50
+            reward = -100
         else:
             reward = -1
         

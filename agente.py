@@ -5,6 +5,7 @@ from representacion import FeedbackConstruction
 import pickle
 import matplotlib.pyplot as plt
 from datetime import datetime
+import time
 
 class SarsaAgent:
     """
@@ -50,7 +51,23 @@ class SarsaAgent:
         # Añade aquí los atributos que necesites para hacerlo.
         self.episode_rewards = []
         self.episode_lengths = []
-        self.episode_timesteps = []
+        self.sum_of_values = []
+        self.grid_value_history = {}
+        
+        # Define grid positions to track (x, y coordinates)
+        self.tracked_positions = [
+            (1.0, 1.0),   # bottom-left corner
+            (3.5, 1.0),
+            (6.5, 1.0),
+            (9.0, 1.0),
+            (6.0, 5.0),   # center
+            (9.0, 9.0),   # top-right corner
+            (3.5, 9.0),   # near target area
+        ]
+        
+        # Initialize history for each position
+        for pos in self.tracked_positions:
+            self.grid_value_history[pos] = []
 
 
         ##############################
@@ -122,7 +139,7 @@ class SarsaAgent:
         
         #############################################
         
-    def train(self, num_episodes, decay_start=0.3, decay_rate=0.7, min_epsilon=0.1):
+    def train(self, num_episodes, decay_start=0.3, decay_rate=0.7, min_epsilon=0.1, plot=True):
         """
         Train the agent using the SARSA(0) algorithm.
         Parameters:
@@ -140,9 +157,7 @@ class SarsaAgent:
         decay_rate = .995 #control del decrecimiento (exponencial) de epsilon
         min_epsilon = .01 #valor mínimo de epsilon
         # si le bajas el epsilon a 0 el agente depende ya solo de sus decisiones
-        list_decay_start = [0.2, 0.3, 0.4]
-        list_decay_rate = [0.9, 0.95, 0.99]
-        list_min_epsilon = [0.01, 0.05, 0.1]
+        
 
         for episode in range(num_episodes):
             #Set-up del episodio
@@ -166,6 +181,22 @@ class SarsaAgent:
                 n_steps += 1
                 if terminated or truncated:
                     break
+                
+            self.episode_rewards.append(total_undiscounted_return)
+            self.episode_lengths.append(n_steps)
+            total_sum = 0
+            for action in range(agent.num_actions):
+                total_sum += np.sum(agent.weights[action])
+            self.sum_of_values.append(total_sum)
+            
+            for pos in self.tracked_positions:
+                # Create a synthetic observation for this position
+                synthetic_state = np.array([pos[0], pos[1], 0, 0])  # x, y, collision, target_area
+                q_values = self.get_q_values(synthetic_state)
+                max_q = np.max(q_values)
+                self.grid_value_history[pos].append(max_q)
+            
+            
 
             #Aquí también puedes cambiar la frecuencia con la que muestras
             #los resultados en la consola, e incluso deshabilitarla.
@@ -173,6 +204,9 @@ class SarsaAgent:
             if episode % episodes_update == 0:                      
                 print(f"Episode {episode}, Total undiscounted return: {total_undiscounted_return}, Epsilon: {self.epsilon}") # a futuro cambiar el total_undiscounted_return por media de últimos episodios
                 #puedes salvar el estado actual del agente, si te viene bien    
+                
+        if plot:
+            self.plot_training_metrics()
 
     
     def evaluate(self, num_episodes):
@@ -209,6 +243,104 @@ class SarsaAgent:
         print(f"Average undiscounted return over {num_episodes} episodes: {avg_return}")
         return avg_return
 
+    def plot_training_metrics(self, window_size=100):
+        """
+        Generate and save plots for all tracked training metrics.
+        
+        Parameters:
+        window_size (int): Window size for computing moving averages
+        """
+        # Create timestamp and folder structure
+        timestamp = datetime.fromtimestamp(time.time()).strftime("%Y%m%d_%H%M%S")
+        class_name = self.__class__.__name__
+        save_dir = os.path.join('runs_graphs', f"{class_name}_{timestamp}")
+        os.makedirs(save_dir, exist_ok=True)
+        
+        # 1. Episode Rewards
+        plt.figure(figsize=(12, 6))
+        plt.plot(self.episode_rewards, alpha=0.3, label='Raw Rewards')
+        if len(self.episode_rewards) >= window_size:
+            moving_avg = np.convolve(self.episode_rewards, 
+                                     np.ones(window_size)/window_size, 
+                                     mode='valid')
+            plt.plot(range(window_size-1, len(self.episode_rewards)), 
+                    moving_avg, 
+                    label=f'Moving Average (window={window_size})', 
+                    linewidth=2)
+        plt.xlabel('Episode')
+        plt.ylabel('Total Reward')
+        plt.title('Episode Rewards Over Training')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        plt.savefig(os.path.join(save_dir, 'episode_rewards.png'), dpi=150, bbox_inches='tight')
+        plt.close()
+        
+        # 2. Episode Lengths
+        plt.figure(figsize=(12, 6))
+        plt.plot(self.episode_lengths, alpha=0.3, label='Raw Episode Length')
+        if len(self.episode_lengths) >= window_size:
+            moving_avg = np.convolve(self.episode_lengths, 
+                                     np.ones(window_size)/window_size, 
+                                     mode='valid')
+            plt.plot(range(window_size-1, len(self.episode_lengths)), 
+                    moving_avg, 
+                    label=f'Moving Average (window={window_size})', 
+                    linewidth=2)
+        plt.xlabel('Episode')
+        plt.ylabel('Steps')
+        plt.title('Episode Length Over Training')
+        plt.legend()
+        plt.grid(True, alpha=0.3)
+        plt.savefig(os.path.join(save_dir, 'episode_lengths.png'), dpi=150, bbox_inches='tight')
+        plt.close()
+        
+        # 3. Rewards vs Total Timesteps
+        if hasattr(self, 'episode_timesteps') and len(self.episode_timesteps) > 0:
+            plt.figure(figsize=(12, 6))
+            plt.plot(self.episode_timesteps, self.episode_rewards, alpha=0.3, label='Raw Rewards')
+            if len(self.episode_rewards) >= window_size:
+                moving_avg = np.convolve(self.episode_rewards, 
+                                         np.ones(window_size)/window_size, 
+                                         mode='valid')
+                plt.plot(self.episode_timesteps[window_size-1:], 
+                        moving_avg, 
+                        label=f'Moving Average (window={window_size})', 
+                        linewidth=2)
+            plt.xlabel('Total Timesteps')
+            plt.ylabel('Total Reward')
+            plt.title('Learning Curve: Rewards vs Total Experience')
+            plt.legend()
+            plt.grid(True, alpha=0.3)
+            plt.savefig(os.path.join(save_dir, 'rewards_vs_timesteps.png'), dpi=150, bbox_inches='tight')
+            plt.close()
+        
+        # 4. Sum of Values
+        if hasattr(self, 'sum_of_values') and len(self.sum_of_values) > 0:
+            plt.figure(figsize=(12, 6))
+            plt.plot(self.sum_of_values)
+            plt.xlabel('Episode')
+            plt.ylabel('Sum of All Weights')
+            plt.title('Sum of All Q-Value Weights Over Training')
+            plt.grid(True, alpha=0.3)
+            plt.savefig(os.path.join(save_dir, 'sum_of_values.png'), dpi=150, bbox_inches='tight')
+            plt.close()
+        
+        # 5. Grid Value History
+        if hasattr(self, 'grid_value_history') and len(self.grid_value_history) > 0:
+            plt.figure(figsize=(14, 7))
+            for pos, values in self.grid_value_history.items():
+                plt.plot(values, label=f'Position {pos}', linewidth=2)
+            plt.xlabel('Episode')
+            plt.ylabel('Max Q-Value')
+            plt.title('Value Function Evolution at Tracked Grid Positions')
+            plt.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            plt.grid(True, alpha=0.3)
+            plt.savefig(os.path.join(save_dir, 'grid_value_history.png'), dpi=150, bbox_inches='tight')
+            plt.close()
+        
+        print(f"Plots saved to: {save_dir}")
+        return save_dir
+
 
 if __name__ == "__main__":
     #instanciamos entorno, representación y agente
@@ -242,7 +374,8 @@ if __name__ == "__main__":
     agent.evaluate(num_episodes=1000)
 
     # Continuar entrenamiento (SARSA-full)
-    agent.train(num_episodes=50_000, decay_start=0.3, decay_rate=0.995, min_epsilon=0.01)
+    agent = SarsaAgent(env, feedback, learning_rate=0.1, discount_factor=0.99, epsilon=0.5)
+    agent.train(num_episodes=50_000, decay_start=0.3, decay_rate=0.9995, min_epsilon=0.01)
 
     # Guardar el agente más entrenado
     filename_full = 'agente_sarsa_50k.pkl'
